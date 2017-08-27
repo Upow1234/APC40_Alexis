@@ -1,4 +1,4 @@
-//last updated 8/3/2017
+//last updated 8/5/2017 prevent page selection from passing to outputBus
 
 import themidibus.*;
 import java.util.Map;
@@ -16,10 +16,10 @@ void setup() {
   size(200, 200);
 
   //uncomment the line below to print a list of midi inputs and outputs
-  //MidiBus.list();
+  MidiBus.list();
 
   controllerBus = new MidiBus(this, "Akai APC40", "Akai APC40");
-  outputBus = new MidiBus(this, -1, "To Ableton");
+  outputBus = new MidiBus(this, -1, "MAX to Resolume");
 
   for (int i = 0; i < 4; i++) {
     page[i] = new APC40Page(i);
@@ -34,13 +34,13 @@ void draw() {
 }
 
 void noteOn(int channel, int pitch, int velocity) {
-/*
+  /*
   println();
-  println("Note On:");
-  println("--------");
-  println("Channel:"+channel);
-  println("Pitch:"+pitch);
-  println("Velocity:"+velocity);*/
+   println("Note On:");
+   println("--------");
+   println("Channel:"+channel);
+   println("Pitch:"+pitch);
+   println("Velocity:"+velocity);*/
 
   if ((pitch >= 52) && (pitch <= 57)) {
 
@@ -59,6 +59,9 @@ void noteOn(int channel, int pitch, int velocity) {
 
       controllerBus.sendNoteOn(channel, pitch, 3);
     }
+    
+    outputBus.sendNoteOn(channel, pitch, velocity);
+    
   } else if (pitch == 87) {
     pageSelection = 0;
 
@@ -96,18 +99,19 @@ void noteOn(int channel, int pitch, int velocity) {
     println("Page Selection = " + pageSelection);
   } else {
     println("Other---  Channel = " + channel + "  Pitch = " + pitch + "  velocity = " + velocity);
-  }
+outputBus.sendNoteOn(channel, pitch, velocity);  
+}
+
   
-  outputBus.sendNoteOn(channel, pitch, velocity);
 }
 
 void noteOff(int channel, int pitch, int velocity) {
   /*println();
-  println("Note Off:");
-  println("--------");
-  println("Channel:"+channel);
-  println("Pitch:"+pitch);
-  println("Velocity:"+velocity);*/
+   println("Note Off:");
+   println("--------");
+   println("Channel:"+channel);
+   println("Pitch:"+pitch);
+   println("Velocity:"+velocity);*/
 
   if ((pitch >= 52) && (pitch <= 57)) {
 
@@ -115,9 +119,13 @@ void noteOff(int channel, int pitch, int velocity) {
     } else {
       controllerBus.sendNoteOn(channel, pitch, 2);
     }
+  } 
+  
+  if ((pitch >= 87) && (pitch <= 90)) {
+  } else {
+    outputBus.sendNoteOff(channel, pitch, velocity);
   }
   
-  outputBus.sendNoteOff(channel, pitch, velocity);
 }
 
 void controllerChange(int channel, int number, int value) {
